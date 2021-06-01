@@ -33,10 +33,9 @@ void stopRefreshingAllSensors() {
 }
 
 /**
-    getNewVoltage() se encarga de agregar un nuevo valor en el array de medición de tensión.
+    getNewCurrent() se encarga de agregar un nuevo valor en el array de medición de tensión.
     Luego de hacerlo, baja el flag correspondiente en refreshRequested.
 */
-
 void getNewCurrent() {
     float newCurrent = 0.0;
     if (index < ARRAY_SIZE) {
@@ -55,6 +54,12 @@ void getNewCurrent() {
     refreshRequested[0] = false;
 }
 
+/**
+    getNewRaindrop() se encarga de agregar un nuevo valor en el array de lluvia,
+    basándose en la medición actual del puerto analógico LLUVIA_PIN y en el umbral 
+    LLUVIA_THRESHOLD_10BIT configurado.
+    Luego de hacerlo, baja el flag correspondiente en refreshRequested.
+*/
 void getNewRaindrop() {
     #ifndef RAINDROP_MOCK
         if (index < ARRAY_SIZE) {
@@ -76,6 +81,13 @@ void getNewRaindrop() {
     refreshRequested[1] = false;
 }
 
+/**
+    getNewGas() se encarga de obtener el nivel de combustible actual,
+    luego de promediar la cantidad de tiempos de eco ultrasónico definidos por PING_SAMPLES,
+    basándose en la diferencia de distancia respecto del fondo del tanque, MAX_DISTANCE,
+    y de una constante que depende de la capacidad del tanque en litros (CAPACIDAD_COMBUSTIBLE).
+    Luego de hacerlo, baja el flag gasRequested correspondiente.
+*/
 void getNewGas() {
     float dist = 0.0;
     float height = 0.0;
@@ -98,11 +110,17 @@ void getNewGas() {
     gasRequested = false;
 }
 
+/**
+    getNewGPS() se encarga de leer la información proveniente del puerto
+    serial correspondiente al GPS (ssGPS) y encodear esa información a un
+    objeto que organiza esos datos (GPS).
+    Luego de hacerlo, baja el flag GPSRequested correspondiente.
+*/
 void getNewGPS() {
     #ifndef GPS_MOCK
         while (ssGPS.available() > 0) {
             GPS.encode(ssGPS.read());
         }
-        GPSRequested = false;
     #endif
+    GPSRequested = false;
 }

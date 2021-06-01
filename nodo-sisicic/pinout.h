@@ -88,6 +88,7 @@ void setupPinout() {
     #ifdef COMBUSTIBLE_ECHO_PIN
         pinMode(COMBUSTIBLE_ECHO_PIN, INPUT);
     #endif
-
-    eMon.voltage(CORRIENTE_PIN, 226.0, 1.7);
+    #ifdef CORRIENTE_PIN
+        eMon.voltage(CORRIENTE_PIN, 226.0, 1.7);
+    #endif
 }

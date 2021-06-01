@@ -59,8 +59,9 @@ void onReceive(int packetSize) {
 
 /**
     LoRaInitialize() inicializa el módulo SX1278 con:
-        - la frecuencia y la palabra de sincronización indicados en constants.h
-        - los pines indicados en pinout.h,
+        - la frecuencia (LORA_FREQ) y la palabra de sincronización (LORA_SYNC_WORD) indicados en constants.h
+        - los pines (NSS_PIN, RESET_PIN, DIO0_PIN) indicados en pinout.h,
+    Además, define la función onRecieve como callback del evento onRecieve.
     Si por algún motivo fallara, "cuelga" al programa.
 */
 void LoRaInitialize() {
@@ -103,25 +104,35 @@ void reserveMemory() {
     composeLoRaPayload() se encarga de crear la string de carga útil de LoRa,
     a partir de los estados actuales de los sensores.
     Por ejemplo, si:
-        DEVICE_ID = 10009
-        volts = {220.00, 230.00}
-        temps = {24.00, 25.00}
+        DEVICE_ID = 20009
+        cts = {0.50, 0.80, 0.65}
+        rain = {1, 0, 1, -1}
+        gas = 123.5187
+        CAPACIDAD_COMBUSTIBLE = 150
+        GPS.location.lat() = -34.574749127
+        GPS.location.lng() = 58.43552318
+        GPS.location.alt() = 15.62
     Entonces, esta función sobreescribe la String a retornar con:
-        "<10009>voltage=225.00&temperature=24.50"
-    @param volts Array con los valores de medición de tensión.
-    @param temps Array con los valores de medición de temperatura.
+        "<20009>current=0.65&raindrops=1&gas=123.51/150&lat=-34.57475&lng=58.43552&alt=15"
+    @param cts Array con los valores de medición de corriente.
+    @param rain Array con los valores de medición de lluvia.
+    @param gas Número con coma flotante con la medición de combustible.
     @param &rtn Dirección de memoria de la String a componer.
 */
-void composeLoRaPayload(float cts[], unsigned int rain[], float gas, String& rtn) {
+void composeLoRaPayload(float cts[], int rain[], float gas, String& rtn) {
     // Payload LoRA = vector de bytes transmitidos en forma FIFO.
     // | Dev ID | Tensión | Temperatura |
     rtn = "<";
-    rtn += DEVICE_ID;
+    #ifdef DEVICE_ID
+        rtn += ((int)DEVICE_ID);
+    #else
+        rtn += "***";
+    #endif
     rtn += ">";
 
     rtn += "current";
     rtn += "=";
-    rtn += compressArray(cts, ARRAY_SIZE);
+    rtn += round2decimals(compressArray(cts, ARRAY_SIZE));
 
     rtn += "&";
     rtn += "raindrops";
@@ -129,21 +140,21 @@ void composeLoRaPayload(float cts[], unsigned int rain[], float gas, String& rtn
     #ifndef RAINDROP_MOCK
         rtn += compressArray(rain, ARRAY_SIZE);
     #else
-        rtn += RAINDROP_MOCK;
+        rtn += ((int)RAINDROP_MOCK);
     #endif
 
     rtn += "&";
     rtn += "gas";
     rtn += "=";
     #ifndef GAS_MOCK
-        rtn += gas;
+        rtn += round2decimals(gas);
     #else
-        rtn += GAS_MOCK;
+        rtn += round2decimals(GAS_MOCK);
     #endif
 
     rtn += "/";
     #ifdef CAPACIDAD_COMBUSTIBLE
-        rtn += CAPACIDAD_COMBUSTIBLE;
+        rtn += ((int)CAPACIDAD_COMBUSTIBLE);
     #else
         rtn += "***";
     #endif
@@ -184,16 +195,16 @@ void composeLoRaPayload(float cts[], unsigned int rain[], float gas, String& rtn
         rtn += "&";
         rtn += "lat";
         rtn += "=";
-        rtn += GPS_MOCK[0];
+        rtn += round5decimals(GPS_MOCK[0]);
 
         rtn += "&";
         rtn += "lng";
         rtn += "=";
-        rtn += GPS_MOCK[1];
+        rtn += round5decimals(GPS_MOCK[1]);
 
         rtn += "&";
         rtn += "alt";
         rtn += "=";
-        rtn += GPS_MOCK[2];
+        rtn += ((int)GPS_MOCK[2]);
     #endif
 }

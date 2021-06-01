@@ -43,16 +43,18 @@
 float currents[ARRAY_SIZE] = {0.0};
 
 /**
-    raindrops es un array de booleanos que contiene los valores de temperatura medidos entre cada
-    transmisión LoRa. El tamaño del array depende del intervalo de tiempo entre cada transmisión
-    LoRa y el intervalo de tiempo entre cada medición.
+    raindrops es un array de enteros con signo que contienen los resultados del polleo del pin de lluvia
+    efectuados entre cada transmisión LoRa.
+    El tamaño del array (ARRAY_SIZE) depende del intervalo de tiempo entre cada transmisión LoRa (TIMEOUT_LORA)
+    y el intervalo de tiempo entre cada medición (TIMEOUT_READ_SENSORS).
     El valor que se transmite por LoRa en realidad es el resultado de una votación para evitar falsos positivos.
-    Una vez realizada la transmisión, todos los valores de este array vuelven a ponerse en 0.
+    Una vez realizada la transmisión, todos los valores de este array vuelven a ponerse en -1.
 */
-unsigned int raindrops[ARRAY_SIZE] = {-1};
+int raindrops[ARRAY_SIZE] = {-1};
 
 /**
-    gases es
+    gas es un float que almacena la cantidad de litros de combustible presentes
+    en el grupo electrógeno.
 */
 float gas = 0.0;
 
@@ -64,14 +66,27 @@ int index = 0;
 
 /**
     refreshRequested contiene SENSORS_QTY variables booleanas que representan la necesidad
-    de refrescar los valores de los arrays de medición. Estos tienen un orden arbitrario:
-    { Tensión, Temperatura }
+    inmediata de refrescar los valores de los arrays de medición. Estos tienen un orden arbitrario:
+    { Corriente, Lluvia  }
     Una vez refrescado, cada uno de estos booleanos vuelve a ponerse en false.
 */
 bool refreshRequested[SENSORS_QTY] = {false};
 
-bool gasRequested = false;
-bool GPSRequested = false;
+/**
+    gasRequested es un flag que representa la necesidad inmediata de volver a medir el nivel
+    de combustible del grupo electrógeno.
+    Se diferencia de los otros sensores (los controlados por refreshRequested) porque esta medición
+    se realiza una vez cada TIMEOUT_LORA segundos (no una vez cada TIMEOUT_READ_SENSORS segundos).
+*/
+bool gasRequested = true;
+
+/**
+    GPSRequested es un flag que representa la necesidad inmediata de volver a leer la posición
+    del GPS.
+    Se diferencia de los otros sensores (los controlados por refreshRequested) porque esta medición
+    se realiza una vez cada TIMEOUT_LORA segundos (no una vez cada TIMEOUT_READ_SENSORS segundos).
+*/
+bool GPSRequested = true;
 
 /**
     outcomingFull es una string que contiene el mensaje LoRa de salida preformateado especialmente
@@ -93,7 +108,7 @@ String incomingFull;
 const String greaterThanStr = ">";
 
 /**
-    receiverStr es una string que sólo contiene el identificador de nodo 
+    receiverStr es una string que sólo contiene el identificador de nodo
     recibido en un mensaje LoRa entrante.
 */
 String receiverStr;
@@ -129,8 +144,9 @@ const String knownCommands[KNOWN_COMMANDS_SIZE] = {
 /**
     setup() lleva a cabo las siguientes tareas:
         - setea el pinout,
-        - inicializa el periférico serial,
+        - inicializa el periférico serial (real),
         - reserva espacios de memoria para las Strings,
+        - inicializa el periférico serial del GPS (virtual),
         - inicializa el módulo LoRa.
     Si después de realizar estas tareas no se "cuelga", da inicio
     a una alerta "exitosa".
@@ -148,14 +164,14 @@ void setup() {
 
 /**
     loop() determina las tareas que cumple el programa:
-        - cada LORA_TIMEOUT segundos, envía un payload LoRa.
+        - cada TIMEOUT_LORA segundos, envía un payload LoRa.
         - si no está ocupado con eso:
             - se ocupa de disparar las alertas preestablecidas.
-            - cada 2 segundos, refresca el estado de los sensores.
+            - cada TIMEOUT_READ_SENSORS segundos, refresca el estado de los sensores.
     Esta función se repite hasta que se le dé un reset al programa.
 */
 void loop() {
-    if (runEvery(sec2ms(LORA_TIMEOUT), 1)) {
+    if (runEvery(sec2ms(TIMEOUT_LORA), 1)) {
         // Deja de refrescar TODOS los sensores.
         stopRefreshingAllSensors();
 
@@ -167,7 +183,7 @@ void loop() {
             Serial.println(outcomingFull);
         #endif
 
-        // Componer y enviar paquete.
+        // Compone y envía el paquete LoRa.
         LoRa.beginPacket();
         LoRa.print(outcomingFull);
         LoRa.endPacket();
@@ -185,16 +201,21 @@ void loop() {
         // Reestablece el index de los arrays de medición.
         index = 0;
 
+        // Vuelve a pedir que se refresquen el estado del nivel de combustible y del GPS.
         gasRequested = true;
         GPSRequested = true;
     }
 
+    // Chequea la necesidad de inicializar alertas.
     callbackAlert();
+
+    // Chequea la necesidad de realizar comandos remotos.
     callbackLoRaCommand();
 
     if(runEvery(sec2ms(TIMEOUT_READ_SENSORS), 2)) {
-        // Refresca TODOS los sensores.
+        // Refresca TODOS los sensores dependientes de refreshRequested.
         refreshAllSensors();
+        // Avanza el índice de TODOS los arrays de medición.
         index++;
     }
 
@@ -212,10 +233,12 @@ void loop() {
         }
 
         if (gasRequested) {
+            // Obtiene un nuevo valor de combustible.
             getNewGas();
         }
 
         if (GPSRequested) {
+            // Obtiene un nuevo valor de GPS.
             getNewGPS();
         }
     }

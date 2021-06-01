@@ -32,7 +32,6 @@ float compressArray(float array[], int size) {
     }
     int nonZeroValues = size - zerosFound;
     average /= nonZeroValues;
-    average = round2decimals(average);
     #if DEBUG_LEVEL >= 5
         Serial.print("Average of array: ");
         Serial.println(average);
@@ -55,7 +54,7 @@ float compressArray(float array[], int size) {
     @param size Cantidad de elementos del array.
     @return Resultado de la votación (0 ó 1). En caso de empate, defaultea 0. En caso de abstención total de votos, devuelve -1.
 */
-int compressArray(unsigned int array[], int size) {
+int compressArray(int array[], int size) {
     int zerosFound = 0;
     int onesFound = 0;
     for (int i = 0; i < size; i++) {
@@ -96,7 +95,7 @@ void cleanupArray(float array[], int size) {
     @param array Arreglo de números que se quiere limpiar.
     @param size Cantidad de elementos del array.
 */
-void cleanupArray(unsigned int array[], int size) {
+void cleanupArray(int array[], int size) {
     for (int i = 0; i < size; i++) {
         array[i] = -1;
     }
