@@ -66,7 +66,7 @@ RS232 (2) - | [ ]A7              INT0/D2[ ] | - Reservado para RA-02.
 #define PRESENCIA_INACTIVO LOW
 #define LLUVIA_THRESHOLD_VOLTAGE 2.5    // Tensión threshold cuando llueve.
 #define LLUVIA_THRESHOLD_10BIT ((int)(LLUVIA_THRESHOLD_VOLTAGE * (1024 / 5.0)))
-#define LLUVIA_ACTIVO HIGH
+#define LLUVIA_ACTIVO LOW
 
 // Instanciamiento de objetos relacionados al pinout.
 EnergyMonitor eMon;

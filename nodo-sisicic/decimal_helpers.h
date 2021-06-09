@@ -7,20 +7,6 @@
 */
 
 /**
-    round5decimals() redondea variables de tipo float a 5 decimales.
-    Por ejemplo:
-        float var = 213.27123632976;
-        var = round5decimals(var);
-    Devuelve 213.27123.
-    @param var Número a redondear.
-    @return Número rendondeado a 5 posiciones decimales.
-*/
-float round5decimals(float var) {
-    float value = (int)(var * 100000 + 0.5);
-    return (float)(value / 100000);
-}
-
-/**
     round2decimals() redondea variables de tipo float a 2 decimales.
     Por ejemplo:
         float var = 213.27123;

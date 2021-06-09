@@ -37,6 +37,7 @@
 #define PING_SAMPLES 5              // Cantidad de muestras ultrasónicos.
 #define EMON_CROSSINGS 20           // Cantidad de semi-ondas muestreadas para medir tensión y/o corriente.
 #define EMON_TIMEOUT 1000           // timeout de la rutina calcVI (en ms).
+#define GPS_DECIMAL_POSITIONS 5     // Cantidad de posiciones decimales para medir la longitud y latitud del GPS.
 
 /// Valores mock.
 // #define CORRIENTE_MOCK 0.26        // Corriente falsa.

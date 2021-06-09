@@ -90,6 +90,9 @@ void reserveMemory() {
     receiverStr.reserve(DEVICE_ID_MAX_SIZE);
     incomingPayload.reserve(INCOMING_PAYLOAD_MAX_SIZE);
     incomingFull.reserve(INCOMING_FULL_MAX_SIZE);
+    latStr.reserve(5 + GPS_DECIMAL_POSITIONS);
+    lngStr.reserve(5 + GPS_DECIMAL_POSITIONS);
+    altStr.reserve(5);
 
     if (!outcomingFull.reserve(MAX_SIZE_OUTCOMING_LORA_REPORT)) {
         #if DEBUG_LEVEL >= 1
@@ -120,8 +123,10 @@ void reserveMemory() {
     @param &rtn Dirección de memoria de la String a componer.
 */
 void composeLoRaPayload(float cts[], int rain[], float gas, String& rtn) {
+    int altitude;
+
     // Payload LoRA = vector de bytes transmitidos en forma FIFO.
-    // | Dev ID | Tensión | Temperatura |
+    // | Dev ID | Corriente | Lluvia | Combustible/capacidad | Latitud | Longitud | Altitud |
     rtn = "<";
     #ifdef DEVICE_ID
         rtn += ((int)DEVICE_ID);
@@ -161,50 +166,32 @@ void composeLoRaPayload(float cts[], int rain[], float gas, String& rtn) {
 
     #ifndef GPS_MOCK
         if (GPS.location.isValid()) {
-            rtn += "&";
-            rtn += "lat";
-            rtn += "=";
-            rtn += round5decimals(GPS.location.lat());
-
-            rtn += "&";
-            rtn += "lng";
-            rtn += "=";
-            rtn += round5decimals(GPS.location.lng());
-
-            rtn += "&";
-            rtn += "alt";
-            rtn += "=";
-            rtn += ((int)GPS.altitude.meters());
+            latStr = String(GPS.location.lat(), GPS_DECIMAL_POSITIONS);
+            lngStr = String(GPS.location.lng(), GPS_DECIMAL_POSITIONS);
+            altStr = String((int)GPS.altitude.meters());
         } else {
-            rtn += "&";
-            rtn += "lat";
-            rtn += "=";
-            rtn += "***";
-
-            rtn += "&";
-            rtn += "lng";
-            rtn += "=";
-            rtn += "***";
-
-            rtn += "&";
-            rtn += "alt";
-            rtn += "=";
-            rtn += "***";
+            latStr = "***";
+            lngStr = "***";
+            altStr = "***";
         }
     #else
-        rtn += "&";
-        rtn += "lat";
-        rtn += "=";
-        rtn += round5decimals(GPS_MOCK[0]);
-
-        rtn += "&";
-        rtn += "lng";
-        rtn += "=";
-        rtn += round5decimals(GPS_MOCK[1]);
-
-        rtn += "&";
-        rtn += "alt";
-        rtn += "=";
-        rtn += ((int)GPS_MOCK[2]);
+        latStr = String(GPS_MOCK[0], GPS_DECIMAL_POSITIONS);
+        lngStr = String(GPS_MOCK[1], GPS_DECIMAL_POSITIONS);
+        altStr = String((int)GPS_MOCK[2]);
     #endif
+
+    rtn += "&";
+    rtn += "lat";
+    rtn += "=";
+    rtn += latStr;
+
+    rtn += "&";
+    rtn += "lng";
+    rtn += "=";
+    rtn += lngStr;
+
+    rtn += "&";
+    rtn += "alt";
+    rtn += "=";
+    rtn += altStr;
 }

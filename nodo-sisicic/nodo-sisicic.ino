@@ -128,6 +128,21 @@ const String knownCommands[KNOWN_COMMANDS_SIZE] = {
 
 };
 
+/**
+    latStr es una String que almacena temporalmente el valor de latitud devuelto por el GPS.
+*/
+String latStr;
+
+/**
+    lngStr es una String que almacena temporalmente el valor de longitud devuelto por el GPS.
+*/
+String lngStr;
+
+/**
+    altStr es una String que almacena temporalmente el valor de altitud devuelto por el GPS.
+*/
+String altStr;
+
 /// Headers finales (proceden a la declaración de variables).
 
 #include "pinout.h"             // Biblioteca propia.
@@ -201,9 +216,8 @@ void loop() {
         // Reestablece el index de los arrays de medición.
         index = 0;
 
-        // Vuelve a pedir que se refresquen el estado del nivel de combustible y del GPS.
+        // Vuelve a pedir que se refresque el estado del nivel de combustible.
         gasRequested = true;
-        GPSRequested = true;
     }
 
     // Chequea la necesidad de inicializar alertas.
@@ -217,6 +231,8 @@ void loop() {
         refreshAllSensors();
         // Avanza el índice de TODOS los arrays de medición.
         index++;
+        // Vuelve a pedir que se refresque el estado del GPS.
+        GPSRequested = true;
     }
 
     if (!resetAlert && !pitidosRestantes) {
