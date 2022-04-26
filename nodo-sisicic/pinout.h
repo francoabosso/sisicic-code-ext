@@ -18,8 +18,8 @@
 RS232 (1) - | [ ]A0       / N \       D9[ ]~| - RS232 (1).
 RS232 (1) - | [ ]A1      /  A  \      D8[ ] | - RS232 (1).
 RS232 (1) - | [ ]A2      \  N  /      D7[ ] | - RS232 (1).
-RS232 (2) - | [ ]A3       \_0_/       D6[ ]~| - Cable SparkOn.
-RS232 (2) - | [ ]A4/SDA               D5[ ]~| - Cable SparkOn.
+RS232 (2) - | [ ]A3       \_0_/       D6[ ]~| - Cable USB / SparkOn.
+RS232 (2) - | [ ]A4/SDA               D5[ ]~| - Cable USB / SparkOn.
 RS232 (2) - | [ ]A5/SCL               D4[ ] | - Reservado para RA-02.
 RS232 (2) - | [ ]A6              INT1/D3[ ]~| - Reservado para RA-02.
 RS232 (2) - | [ ]A7              INT0/D2[ ] | - Reservado para RA-02.
@@ -47,7 +47,7 @@ RS232 (2) - | [ ]A7              INT0/D2[ ] | - Reservado para RA-02.
             - Sensor de corriente = A1.
             - Sensor de lluvia = A0.
             - Sensor GPS = D9 (RX) + D7 (TX).
-            - Actuador buzzer (y LED) = D9.
+            - Actuador buzzer (y LED) = D8.
 */
 
 // Pinout sensores y actuadores.
@@ -56,8 +56,8 @@ RS232 (2) - | [ ]A7              INT0/D2[ ] | - Reservado para RA-02.
 #define BUZZER_PIN 8
 #define RX_GPS_PIN 9
 #define TX_GPS_PIN 7
-#define COMBUSTIBLE_ECHO_PIN 6      // Vía cable SparkOn.
-#define COMBUSTIBLE_TRIG_PIN 5      // Vía cable SparkOn.
+#define COMBUSTIBLE_ECHO_PIN 6      // A través de cable SparkOn.
+#define COMBUSTIBLE_TRIG_PIN 5      // A través de cable SparkOn.
 
 // Definición de modo de trabajo.
 #define BUZZER_ACTIVO HIGH
